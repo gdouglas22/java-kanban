@@ -28,6 +28,9 @@ public class TaskManager {
     }
 
     public void addTask(Task task) {
+        if (task == null) {
+            throw new NoSuchElementException(String.format(Messages.ERROR_NULL_TASK));
+        }
         if (tasks.size() >= TaskConfig.maxTasks) {
             throw new IllegalStateException(Messages.ERROR_TASK_LIMIT_REACHED);
         }
@@ -35,6 +38,9 @@ public class TaskManager {
     }
 
     public void updateTask(Task task) {
+        if (task == null) {
+            throw new NoSuchElementException(String.format(Messages.ERROR_NULL_TASK));
+        }
         if (!tasks.containsKey(task.getId())) {
             throw new NoSuchElementException(String.format(Messages.ERROR_TASK_NOT_FOUND, task.getId()));
         }

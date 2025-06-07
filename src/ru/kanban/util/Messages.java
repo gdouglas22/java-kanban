@@ -15,12 +15,6 @@ public final class Messages {
     public static final String ERROR_EPIC_LIMIT_REACHED = "Ошибка: Достигнут лимит задач-эпиков";
     public static final String ERROR_SUBTASK_LIMIT_REACHED = "Ошибка: Достигнут общий лимит сабзадач";
     public static final String ERROR_EPIC_STATUS_SET_MANUALLY = "Ошибка: статус эпика запрещено менять вручную";
-    public static final String INFO_TASK_CREATED = "Задача успешно создана: %s";
-    public static final String INFO_EPIC_CREATED = "Эпик успешно создан: %s";
-    public static final String INFO_SUBTASK_CREATED = "Подзадача успешно создана: %s";
-
-
-
 
     private Messages() {}
 }
