@@ -1,58 +1,93 @@
 package ru.kanban.task;
 
-import org.jetbrains.annotations.NotNull;
-import ru.kanban.util.Messages;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-public class Epic extends TaskBase {
+public class Epic extends Task {
+    private final List<SubTask> subTasks;
 
-    private final List<Long> subtaskIds = new ArrayList<>();
-
-    public Epic(String title, String description) {
-        super(title, description);
+    public Epic(long id, String title, String description) {
+        super(id, title, description);
+        this.subTasks = new ArrayList<>();
+        updateStatus();
     }
 
-    public Epic(String title, String description, List<Long> subtaskIds) {
-        super(title, description);
-        if (subtaskIds != null) {
-            this.subtaskIds.addAll(subtaskIds);
+    public void addSubTask(SubTask subTask) {
+        subTasks.add(subTask);
+        updateStatus();
+    }
+
+    public void removeSubTask(SubTask subTask) {
+        subTasks.remove(subTask);
+        updateStatus();
+    }
+
+    public List<SubTask> getSubTasks() {
+        return subTasks;
+    }
+
+    public void updateStatus() {
+        if (subTasks.isEmpty()) {
+            this.status = TaskStatus.NEW;
+            return;
+        }
+
+        boolean allNew = true;
+        boolean allDone = true;
+
+        for (SubTask st : subTasks) {
+            if (st.getStatus() != TaskStatus.NEW) {
+                allNew = false;
+            }
+            if (st.getStatus() != TaskStatus.DONE) {
+                allDone = false;
+            }
+        }
+
+        if (allDone) {
+            this.status = TaskStatus.DONE;
+        } else if (allNew) {
+            this.status = TaskStatus.NEW;
+        } else {
+            this.status = TaskStatus.IN_PROGRESS;
         }
     }
 
-    public Epic(String title, String description, long @NotNull ... subtaskIds) {
-        super(title, description);
-        for (long id : subtaskIds) {
-            this.subtaskIds.add(id);
+    public void replaceSubTask(SubTask subtask) {
+        for (int i = 0; i < subTasks.size(); i++) {
+            if (subTasks.get(i).getId() == subtask.getId()) {
+                subTasks.set(i, subtask);
+                return;
+            }
         }
+
+        addSubTask(subtask);
     }
 
-    public List<Long> getSubtaskIds() {
-        return new ArrayList<>(subtaskIds);
-    }
-
-    public void addSubtaskId(long subtaskId) {
-        subtaskIds.add(subtaskId);
-    }
-
-    public void removeSubtaskId(long subtaskId) {
-        subtaskIds.remove(subtaskId);
-    }
-
-    public void clearSubtaskIds() {
-        subtaskIds.clear();
+    public void clearSubTasks() {
+        subTasks.clear();
     }
 
     @Override
-    public void setStatus(TaskStatus status) {
-        throw new UnsupportedOperationException(Messages.ERROR_EPIC_STATUS_SET_MANUALLY);
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        Epic other = (Epic) obj;
+
+        return id == other.id &&
+                Objects.equals(title, other.getTitle()) &&
+                Objects.equals(description, other.description) &&
+                status == other.status &&
+                Objects.equals(subTasks, other.subTasks);
     }
 
-    // обновление статуса через метод с package-private
-    void epicSetStatus(TaskStatus status) {
-        super.setStatus(status);
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, title, description, status, subTasks);
     }
+
 
     @Override
     public String toString() {
@@ -61,8 +96,10 @@ public class Epic extends TaskBase {
                 ", title='" + getTitle() + '\'' +
                 ", description='" + getDescription() + '\'' +
                 ", status=" + getStatus() +
-                ", subtaskIds=" + subtaskIds +
+                ", subtaskIds=" + getSubTasks() +
                 '}';
     }
+
+
 }
 
