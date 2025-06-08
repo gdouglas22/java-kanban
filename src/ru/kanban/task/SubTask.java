@@ -33,7 +33,6 @@ public class SubTask extends Task {
         return Objects.hash(id, title, description, status, epicId);
     }
 
-
     @Override
     public String toString() {
         return "SubTask{" +

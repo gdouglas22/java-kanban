@@ -54,21 +54,6 @@ public class Epic extends Task {
         }
     }
 
-    public void replaceSubTask(SubTask subtask) {
-        for (int i = 0; i < subTasks.size(); i++) {
-            if (subTasks.get(i).getId() == subtask.getId()) {
-                subTasks.set(i, subtask);
-                return;
-            }
-        }
-
-        addSubTask(subtask);
-    }
-
-    public void clearSubTasks() {
-        subTasks.clear();
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
@@ -88,7 +73,6 @@ public class Epic extends Task {
         return Objects.hash(id, title, description, status, subTasks);
     }
 
-
     @Override
     public String toString() {
         return "EpicTask{" +
@@ -99,7 +83,5 @@ public class Epic extends Task {
                 ", subtaskIds=" + getSubTasks() +
                 '}';
     }
-
-
 }
 
