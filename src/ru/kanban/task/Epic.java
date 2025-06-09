@@ -5,29 +5,26 @@ import java.util.List;
 import java.util.Objects;
 
 public class Epic extends Task {
-    private final List<SubTask> subTasks;
+    private final List<Long> subTaskIds = new ArrayList<>();
 
     public Epic(long id, String title, String description) {
         super(id, title, description);
-        this.subTasks = new ArrayList<>();
-        updateStatus();
+        this.status = TaskStatus.NEW;
     }
 
-    public void addSubTask(SubTask subTask) {
-        subTasks.add(subTask);
-        updateStatus();
+    public void addSubTaskId(long subTaskId) {
+        subTaskIds.add(subTaskId);
     }
 
-    public void removeSubTask(SubTask subTask) {
-        subTasks.remove(subTask);
-        updateStatus();
+    public void removeSubTaskId(long subTaskId) {
+        subTaskIds.remove(subTaskId);
     }
 
-    public List<SubTask> getSubTasks() {
-        return subTasks;
+    public List<Long> getSubTaskIds() {
+        return subTaskIds;
     }
 
-    public void updateStatus() {
+    public void updateStatus(List<SubTask> subTasks) {
         if (subTasks.isEmpty()) {
             this.status = TaskStatus.NEW;
             return;
@@ -37,12 +34,8 @@ public class Epic extends Task {
         boolean allDone = true;
 
         for (SubTask st : subTasks) {
-            if (st.getStatus() != TaskStatus.NEW) {
-                allNew = false;
-            }
-            if (st.getStatus() != TaskStatus.DONE) {
-                allDone = false;
-            }
+            if (st.getStatus() != TaskStatus.NEW) allNew = false;
+            if (st.getStatus() != TaskStatus.DONE) allDone = false;
         }
 
         if (allDone) {
@@ -55,33 +48,29 @@ public class Epic extends Task {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
+    public String toString() {
+        return "Epic{" +
+                "id=" + getId() +
+                ", title='" + getTitle() + '\'' +
+                ", status=" + getStatus() +
+                ", subtaskIds=" + subTaskIds +
+                '}';
+    }
 
-        Epic other = (Epic) obj;
-
-        return id == other.id &&
-                Objects.equals(title, other.getTitle()) &&
-                Objects.equals(description, other.description) &&
-                status == other.status &&
-                Objects.equals(subTasks, other.subTasks);
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Epic epic)) return false;
+        return id == epic.id &&
+                Objects.equals(title, epic.title) &&
+                Objects.equals(description, epic.description) &&
+                status == epic.status &&
+                Objects.equals(subTaskIds, epic.subTaskIds);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title, description, status, subTasks);
-    }
-
-    @Override
-    public String toString() {
-        return "EpicTask{" +
-                "id=" + getId() +
-                ", title='" + getTitle() + '\'' +
-                ", description='" + getDescription() + '\'' +
-                ", status=" + getStatus() +
-                ", subtaskIds=" + getSubTasks() +
-                '}';
+        return Objects.hash(id, title, description, status, subTaskIds);
     }
 }
 
