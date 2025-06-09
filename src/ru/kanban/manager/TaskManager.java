@@ -12,17 +12,15 @@ public class TaskManager {
 
     public Task createTask(String title, String description) {
         if (title == null || description == null) return null;
-        Task task = new Task(idCounter, title, description);
-        tasks.put(idCounter, task);
-        idCounter++;
+        Task task = new Task(idCounter++, title, description);
+        tasks.put(task.getId(), task);
         return task;
     }
 
     public Epic createEpic(String title, String description) {
         if (title == null || description == null) return null;
-        Epic epic = new Epic(idCounter, title, description);
-        epics.put(idCounter, epic);
-        idCounter++;
+        Epic epic = new Epic(idCounter++, title, description);
+        epics.put(epic.getId(), epic);
         return epic;
     }
 
@@ -32,10 +30,9 @@ public class TaskManager {
         if (epic == null) {
             throw new IllegalArgumentException("Эпик с id " + epicId + " не существует");
         }
-        SubTask subTask = new SubTask(idCounter, title, description, epicId);
-        subtasks.put(idCounter, subTask);
-        epic.addSubTaskId(idCounter);
-        idCounter++;
+        SubTask subTask = new SubTask(idCounter++, title, description, epicId);
+        subtasks.put(subTask.getId(), subTask);
+        epic.addSubTaskId(subTask.getId());
         updateEpicStatus(epic);
         return subTask;
     }
