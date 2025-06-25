@@ -10,11 +10,11 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class InMemoryHistoryManagerTest {
 
-    private InMemoryHistoryManager history;
+    private HistoryManager history;
 
     @BeforeEach
     void setUp() {
-        history = new InMemoryHistoryManager();
+        history = Managers.getDefaultHistory();
     }
 
     @Test

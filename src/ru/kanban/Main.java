@@ -2,13 +2,14 @@ package ru.kanban;
 
 import ru.kanban.manager.InMemoryTaskManager;
 import ru.kanban.manager.Managers;
+import ru.kanban.manager.TaskManager;
 import ru.kanban.task.*;
 
 import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        InMemoryTaskManager manager = (InMemoryTaskManager) Managers.getDefault();
+        TaskManager manager = Managers.getDefault();
 
         Task t1 = manager.createTask("t1", "desc1");
         Task t2 = manager.createTask("t2", "desc2");
