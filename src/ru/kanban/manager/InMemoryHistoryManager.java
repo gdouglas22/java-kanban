@@ -1,6 +1,7 @@
 package ru.kanban.manager;
 
 import ru.kanban.task.Task;
+
 import java.util.*;
 
 public class InMemoryHistoryManager implements HistoryManager {
