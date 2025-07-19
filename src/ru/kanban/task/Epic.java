@@ -1,7 +1,5 @@
 package ru.kanban.task;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -26,7 +24,7 @@ public class Epic extends Task {
         return subTaskIds;
     }
 
-    public void updateStatus(@NotNull List<SubTask> subTasks) {
+    public void updateStatus(List<SubTask> subTasks) {
         if (subTasks.isEmpty()) {
             this.status = TaskStatus.NEW;
             return;
