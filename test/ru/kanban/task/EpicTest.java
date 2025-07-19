@@ -116,15 +116,15 @@ class EpicTest {
     @Test
     void shouldAddSubTaskId() {
         Epic e1 = new Epic(1, "e1", "desc1");
-        e1.addSubTaskId(101L);
-        assertTrue(e1.getSubTaskIds().contains(101L));
+        e1.addSubTaskId(101);
+        assertTrue(e1.getSubTaskIds().contains(101));
     }
 
     @Test
     void shouldRemoveSubTaskId() {
         Epic e1 = new Epic(1, "e1", "desc1");
-        e1.addSubTaskId(101L);
-        e1.removeSubTaskId(101L);
+        e1.addSubTaskId(101);
+        e1.removeSubTaskId(101);
         assertFalse(e1.getSubTaskIds().contains(101L));
     }
 

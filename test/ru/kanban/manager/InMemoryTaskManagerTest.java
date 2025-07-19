@@ -186,4 +186,24 @@ class InMemoryTaskManagerTest {
         Epic e = manager.getEpic(e1.getId());
         assertFalse(e.getSubTaskIds().contains(s1.getId()));
     }
+
+    @Test
+    void shouldNotKeepStaleSubTaskIdsInEpic() {
+        Epic epic = manager.createEpic("e", "d");
+        SubTask sub = manager.createSubTask("s", "d", epic.getId());
+
+        manager.removeSubTask(sub.getId());
+
+        Epic updatedEpic = manager.getEpic(epic.getId());
+        assertFalse(updatedEpic.getSubTaskIds().contains(sub.getId()));
+    }
+
+    @Test
+    void modifyingTaskDirectlyShouldAffectManagerState() {
+        Task t = manager.createTask("t", "d");
+        t.setTitle("changed");
+
+        Task fromManager = manager.getTask(t.getId());
+        assertEquals("changed", fromManager.getTitle());
+    }
 }

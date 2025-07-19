@@ -7,22 +7,22 @@ import java.util.List;
 import java.util.Objects;
 
 public class Epic extends Task {
-    private final List<Long> subTaskIds = new ArrayList<>();
+    private final List<Integer> subTaskIds = new ArrayList<>();
 
-    public Epic(long id, String title, String description) {
+    public Epic(int id, String title, String description) {
         super(id, title, description);
         this.status = TaskStatus.NEW;
     }
 
-    public void addSubTaskId(long subTaskId) {
+    public void addSubTaskId(int subTaskId) {
         subTaskIds.add(subTaskId);
     }
 
-    public void removeSubTaskId(long subTaskId) {
-        subTaskIds.remove(subTaskId);
+    public void removeSubTaskId(int subTaskId) {
+        subTaskIds.remove(Integer.valueOf(subTaskId));
     }
 
-    public List<Long> getSubTaskIds() {
+    public List<Integer> getSubTaskIds() {
         return subTaskIds;
     }
 
