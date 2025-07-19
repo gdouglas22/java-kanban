@@ -2,7 +2,10 @@ package ru.kanban.manager;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.kanban.task.*;
+import ru.kanban.task.Epic;
+import ru.kanban.task.SubTask;
+import ru.kanban.task.Task;
+import ru.kanban.task.TaskStatus;
 
 import java.util.List;
 

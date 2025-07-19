@@ -1,8 +1,13 @@
 package ru.kanban.manager;
 
-import ru.kanban.task.*;
+import ru.kanban.task.Epic;
+import ru.kanban.task.SubTask;
+import ru.kanban.task.Task;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class InMemoryTaskManager implements TaskManager {
     private int idCounter = 0;
