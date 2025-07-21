@@ -11,7 +11,7 @@ public interface TaskManager {
 
     Epic createEpic(String title, String description);
 
-    SubTask createSubTask(String title, String description, long epicId);
+    SubTask createSubTask(String title, String description, int epicId);
 
     void addTask(Task task);
 
@@ -19,11 +19,11 @@ public interface TaskManager {
 
     void addSubTask(SubTask subtask);
 
-    Task getTask(long id);
+    Task getTask(int id);
 
-    Epic getEpic(long id);
+    Epic getEpic(int id);
 
-    SubTask getSubTask(long id);
+    SubTask getSubTask(int id);
 
     List<Task> getAllTasks();
 
@@ -31,17 +31,17 @@ public interface TaskManager {
 
     List<SubTask> getAllSubTasks();
 
-    List<SubTask> getSubTasksOfEpic(long epicId);
+    List<SubTask> getSubTasksOfEpic(int epicId);
 
     void updateTask(Task updatedTask);
 
     void updateSubTask(SubTask updatedSubTask);
 
-    void removeTask(long id);
+    void removeTask(int id);
 
-    void removeEpic(long id);
+    void removeEpic(int id);
 
-    void removeSubTask(long id);
+    void removeSubTask(int id);
 
     void clearAll();
 

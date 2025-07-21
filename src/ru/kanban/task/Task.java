@@ -3,19 +3,19 @@ package ru.kanban.task;
 import java.util.Objects;
 
 public class Task {
-    protected long id;
+    protected int id;
     protected String title;
     protected String description;
     protected TaskStatus status;
 
-    public Task(long id, String title, String description) {
+    public Task(int id, String title, String description) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.status = TaskStatus.NEW;
     }
 
-    public long getId() {
+    public int getId() {
         return id;
     }
 
@@ -45,7 +45,7 @@ public class Task {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true; // один и тот же объект
+        if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
 
         Task other = (Task) obj;

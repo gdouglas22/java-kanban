@@ -3,14 +3,14 @@ package ru.kanban.task;
 import java.util.Objects;
 
 public class SubTask extends Task {
-    private final long epicId;
+    private final int epicId;
 
-    public SubTask(long id, String title, String description, long epicId) {
+    public SubTask(int id, String title, String description, int epicId) {
         super(id, title, description);
         this.epicId = epicId;
     }
 
-    public long getEpicId() {
+    public int getEpicId() {
         return epicId;
     }
 
