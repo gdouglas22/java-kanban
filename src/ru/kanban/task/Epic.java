@@ -1,32 +1,37 @@
 package ru.kanban.task;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class Epic extends Task {
-    private final List<Long> subTaskIds = new ArrayList<>();
+    private final List<Integer> subTaskIds = new ArrayList<>();
 
-    public Epic(long id, String title, String description) {
+    public Epic(int id, String title, String description) {
         super(id, title, description);
         this.status = TaskStatus.NEW;
+        this.type = TaskType.EPIC;
     }
 
-    public void addSubTaskId(long subTaskId) {
+    public Epic(int id, String title, String description, TaskStatus status) {
+        super(id, title, description);
+        this.type = TaskType.EPIC;
+        this.status = status;
+    }
+
+    public void addSubTaskId(int subTaskId) {
         subTaskIds.add(subTaskId);
     }
 
-    public void removeSubTaskId(long subTaskId) {
-        subTaskIds.remove(subTaskId);
+    public void removeSubTaskId(int subTaskId) {
+        subTaskIds.remove(Integer.valueOf(subTaskId));
     }
 
-    public List<Long> getSubTaskIds() {
+    public List<Integer> getSubTaskIds() {
         return subTaskIds;
     }
 
-    public void updateStatus(@NotNull List<SubTask> subTasks) {
+    public void updateStatus(List<SubTask> subTasks) {
         if (subTasks.isEmpty()) {
             this.status = TaskStatus.NEW;
             return;

@@ -2,7 +2,10 @@ package ru.kanban.manager;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.kanban.task.*;
+import ru.kanban.task.Epic;
+import ru.kanban.task.SubTask;
+import ru.kanban.task.Task;
+import ru.kanban.task.TaskStatus;
 
 import java.util.List;
 
@@ -185,5 +188,25 @@ class InMemoryTaskManagerTest {
 
         Epic e = manager.getEpic(e1.getId());
         assertFalse(e.getSubTaskIds().contains(s1.getId()));
+    }
+
+    @Test
+    void shouldNotKeepStaleSubTaskIdsInEpic() {
+        Epic epic = manager.createEpic("e", "d");
+        SubTask sub = manager.createSubTask("s", "d", epic.getId());
+
+        manager.removeSubTask(sub.getId());
+
+        Epic updatedEpic = manager.getEpic(epic.getId());
+        assertFalse(updatedEpic.getSubTaskIds().contains(sub.getId()));
+    }
+
+    @Test
+    void modifyingTaskDirectlyShouldAffectManagerState() {
+        Task t = manager.createTask("t", "d");
+        t.setTitle("changed");
+
+        Task fromManager = manager.getTask(t.getId());
+        assertEquals("changed", fromManager.getTitle());
     }
 }
