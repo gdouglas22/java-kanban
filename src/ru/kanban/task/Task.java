@@ -29,7 +29,9 @@ public class Task {
         return id;
     }
 
-    public TaskType getType() { return type; }
+    public TaskType getType() {
+        return type;
+    }
 
     public String getTitle() {
         return title;
