@@ -4,10 +4,8 @@ import ru.kanban.task.Epic;
 import ru.kanban.task.SubTask;
 import ru.kanban.task.Task;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
 
 public class InMemoryTaskManager implements TaskManager {
     protected int idCounter = 0;
@@ -16,6 +14,12 @@ public class InMemoryTaskManager implements TaskManager {
     protected final Map<Integer, Epic> epics = new HashMap<>();
     protected final Map<Integer, SubTask> subtasks = new HashMap<>();
     protected final HistoryManager historyManager;
+
+    protected final NavigableSet<Task> prioritizedTasks = new TreeSet<>(
+            Comparator
+                    .comparing(Task::getStartTime, Comparator.nullsLast(Comparator.naturalOrder()))
+                    .thenComparingInt(Task::getId)
+    );
 
     public InMemoryTaskManager(HistoryManager historyManager) {
         this.historyManager = historyManager;
@@ -228,5 +232,37 @@ public class InMemoryTaskManager implements TaskManager {
         return historyManager.getHistory();
     }
 
+    protected void indexForPriority(Task t) {
+        if (t.getStartTime() != null) {
+            prioritizedTasks.add(t);
+        }
+    }
+
+    protected void deindexForPriority(Task t) {
+        if (t.getStartTime() != null) {
+            prioritizedTasks.remove(t);
+        }
+    }
+
+    @Override
+    public List<Task> getPrioritizedTasks() {
+        return new ArrayList<>(prioritizedTasks);
+    }
+
+    private boolean overlaps(Task a, Task b) {
+        if (a == null || b == null) return false;
+        LocalDateTime aStart = a.getStartTime();
+        LocalDateTime aEnd = a.getEndTime();
+        LocalDateTime bStart = b.getStartTime();
+        LocalDateTime bEnd = b.getEndTime();
+        if (aStart == null || aEnd == null || bStart == null || bEnd == null) return false;
+        return aStart.isBefore(bEnd) && bStart.isBefore(aEnd);
+    }
+
+    private boolean overlapsAny(Task candidate, int ignoreId) {
+        return prioritizedTasks.stream()
+                .filter(t -> t.getId() != ignoreId)
+                .anyMatch(t -> overlaps(candidate, t));
+    }
 }
 

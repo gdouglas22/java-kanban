@@ -1,11 +1,15 @@
 package ru.kanban.task;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class Epic extends Task {
     private final List<Integer> subTaskIds = new ArrayList<>();
+    private LocalDateTime endTime;
 
     public Epic(int id, String title, String description) {
         super(id, title, description);
@@ -13,10 +17,49 @@ public class Epic extends Task {
         this.type = TaskType.EPIC;
     }
 
-    public Epic(int id, String title, String description, TaskStatus status) {
-        super(id, title, description);
-        this.type = TaskType.EPIC;
-        this.status = status;
+    @Override
+    public void setStartTime(LocalDateTime startTime) {}
+
+    @Override
+    public void setDuration(Duration duration) {}
+
+    @Override
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void recalcTimeFields(Map<Integer, SubTask> subtasks) {
+        if (subTaskIds.isEmpty()) {
+            this.startTime = null;
+            this.duration = Duration.ZERO;
+            this.endTime = null;
+        } else {
+
+            Duration total = Duration.ZERO;
+            LocalDateTime minStart = null;
+            LocalDateTime maxEnd = null;
+
+            for (Integer id : subTaskIds) {
+                SubTask s = subtasks.get(id);
+                if (s == null) continue;
+
+                if (s.getDuration() != null) total = total.plus(s.getDuration());
+
+                LocalDateTime sStart = s.getStartTime();
+                LocalDateTime sEnd = s.getEndTime();
+
+                if (sStart != null) {
+                    minStart = (minStart == null || sStart.isBefore(minStart)) ? sStart : minStart;
+                }
+                if (sEnd != null) {
+                    maxEnd = (maxEnd == null || sEnd.isAfter(maxEnd)) ? sEnd : maxEnd;
+                }
+            }
+
+            this.duration = total;
+            this.startTime = minStart;
+            this.endTime = maxEnd;
+        }
     }
 
     public void addSubTaskId(int subTaskId) {

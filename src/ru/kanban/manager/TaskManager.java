@@ -4,6 +4,7 @@ import ru.kanban.task.Epic;
 import ru.kanban.task.SubTask;
 import ru.kanban.task.Task;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public interface TaskManager {
@@ -46,4 +47,6 @@ public interface TaskManager {
     void clearAll();
 
     List<Task> getHistory();
+
+    List<Task> getPrioritizedTasks();
 }
