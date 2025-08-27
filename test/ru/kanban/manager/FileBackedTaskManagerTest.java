@@ -83,8 +83,8 @@ public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskMan
 
         List<Task> prioritized = loaded.getPrioritizedTasks();
         assertEquals(2, prioritized.size());
-        assertEquals(s1.getId(), prioritized.get(0).getId()); // 09:00 первым
-        assertEquals(s2.getId(), prioritized.get(1).getId()); // 11:00 вторым
+        assertEquals(s1.getId(), prioritized.get(0).getId());
+        assertEquals(s2.getId(), prioritized.get(1).getId());
     }
 
     @Test
