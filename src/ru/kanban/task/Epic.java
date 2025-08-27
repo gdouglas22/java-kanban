@@ -50,8 +50,12 @@ public class Epic extends Task {
         boolean allDone = true;
 
         for (SubTask st : subTasks) {
-            if (st.getStatus() != TaskStatus.NEW) allNew = false;
-            if (st.getStatus() != TaskStatus.DONE) allDone = false;
+            if (st.getStatus() != TaskStatus.NEW) {
+                allNew = false;
+            }
+            if (st.getStatus() != TaskStatus.DONE) {
+                allDone = false;
+            }
         }
 
         if (allDone) {
