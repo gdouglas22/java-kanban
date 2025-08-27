@@ -28,40 +28,6 @@ public class Epic extends Task {
         return endTime;
     }
 
-    public void recalcTimeFields(Map<Integer, SubTask> subtasks) {
-        if (subTaskIds.isEmpty()) {
-            this.startTime = null;
-            this.duration = Duration.ZERO;
-            this.endTime = null;
-        } else {
-
-            Duration total = Duration.ZERO;
-            LocalDateTime minStart = null;
-            LocalDateTime maxEnd = null;
-
-            for (Integer id : subTaskIds) {
-                SubTask s = subtasks.get(id);
-                if (s == null) continue;
-
-                if (s.getDuration() != null) total = total.plus(s.getDuration());
-
-                LocalDateTime sStart = s.getStartTime();
-                LocalDateTime sEnd = s.getEndTime();
-
-                if (sStart != null) {
-                    minStart = (minStart == null || sStart.isBefore(minStart)) ? sStart : minStart;
-                }
-                if (sEnd != null) {
-                    maxEnd = (maxEnd == null || sEnd.isAfter(maxEnd)) ? sEnd : maxEnd;
-                }
-            }
-
-            this.duration = total;
-            this.startTime = minStart;
-            this.endTime = maxEnd;
-        }
-    }
-
     public void addSubTaskId(int subTaskId) {
         subTaskIds.add(subTaskId);
     }
@@ -121,6 +87,40 @@ public class Epic extends Task {
     @Override
     public int hashCode() {
         return Objects.hash(id, title, description, status, subTaskIds);
+    }
+
+    public void recalcTimeFields(Map<Integer, SubTask> subtasks) {
+        if (subTaskIds.isEmpty()) {
+            this.startTime = null;
+            this.duration = Duration.ZERO;
+            this.endTime = null;
+        } else {
+
+            Duration total = Duration.ZERO;
+            LocalDateTime minStart = null;
+            LocalDateTime maxEnd = null;
+
+            for (Integer id : subTaskIds) {
+                SubTask s = subtasks.get(id);
+                if (s == null) continue;
+
+                if (s.getDuration() != null) total = total.plus(s.getDuration());
+
+                LocalDateTime sStart = s.getStartTime();
+                LocalDateTime sEnd = s.getEndTime();
+
+                if (sStart != null) {
+                    minStart = (minStart == null || sStart.isBefore(minStart)) ? sStart : minStart;
+                }
+                if (sEnd != null) {
+                    maxEnd = (maxEnd == null || sEnd.isAfter(maxEnd)) ? sEnd : maxEnd;
+                }
+            }
+
+            this.duration = total;
+            this.startTime = minStart;
+            this.endTime = maxEnd;
+        }
     }
 }
 

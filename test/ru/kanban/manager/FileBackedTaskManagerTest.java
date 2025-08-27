@@ -1,234 +1,156 @@
 package ru.kanban.manager;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.kanban.task.*;
+import org.junit.jupiter.api.io.TempDir;
+import ru.kanban.task.Epic;
+import ru.kanban.task.SubTask;
+import ru.kanban.task.Task;
+import ru.kanban.task.TaskStatus;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class FileBackedTaskManagerTest {
+public class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
 
-    private Path tempPath;
-    private FileBackedTaskManager manager;
+    @TempDir
+    Path tempDir;
+    Path tempPath;
 
-    @BeforeEach
-    void setup() throws IOException {
-        tempPath = Files.createTempFile("kanban-test", ".csv");
-        manager = new FileBackedTaskManager(tempPath);
+    @Override
+    protected FileBackedTaskManager createManager() throws IOException {
+        tempPath = tempDir.resolve("kanban-test.csv");
+        Files.createFile(tempPath);
+        return new FileBackedTaskManager(tempPath);
     }
 
     @Test
-    void shouldSaveAndLoad_TaskCorrectly() {
-        Task t1 = manager.createTask("t1", "desc1");
-        manager.getTask(t1.getId());
+    void saveAndLoad_preservesTasksAndPriorityAndEpicTime() {
+        Task a = manager.createTask("A", "d");
+        a.setStartTime(LocalDateTime.of(2025,1,1,10,0));
+        a.setDuration(Duration.ofMinutes(30));
+        manager.updateTask(a);
+
+        Task b = manager.createTask("B", "d");
+        b.setStartTime(LocalDateTime.of(2025,1,1,11,0));
+        b.setDuration(Duration.ofMinutes(30));
+        manager.updateTask(b);
 
         FileBackedTaskManager loaded = FileBackedTaskManager.loadFromFile(tempPath);
-        Task restored = loaded.getTask(t1.getId());
 
-        assertEquals(t1, restored);
+        List<Task> p = loaded.getPrioritizedTasks();
+
+        assertEquals(2, p.size());
+        assertEquals(a.getId(), p.get(0).getId());
+        assertEquals(b.getId(), p.get(1).getId());
     }
 
     @Test
-    void shouldAddTask_AndPersistToFile() throws IOException {
-        Task t1 = manager.createTask("t1", "desc1");
+    void saveAndLoad_epicWithSubtasks_restoresRelations_time_and_status() {
+        Epic e = manager.createEpic("E", "d");
 
-        assertNotNull(t1);
-        assertEquals("t1", manager.getTask(t1.getId()).getTitle());
-
-        List<String> lines = Files.readAllLines(tempPath);
-        assertTrue(lines.stream().anyMatch(line -> line.contains("t1") && line.contains("desc1")));
-    }
-
-    @Test
-    void shouldAddEpic_AndPersistToFile() throws IOException {
-        Epic e1 = manager.createEpic("e1", "desc1");
-
-        assertNotNull(e1);
-        assertTrue(manager.getEpic(e1.getId()).getSubTaskIds().isEmpty());
-
-        List<String> lines = Files.readAllLines(tempPath);
-        assertTrue(lines.stream().anyMatch(line -> line.contains("e1") && line.contains("desc1")
-                && line.contains("EPIC")));
-    }
-
-    @Test
-    void shouldAddSubtaskAndLinkToEpic() throws IOException {
-        Epic e1 = manager.createEpic("e1", "desc1");
-        SubTask s1 = manager.createSubTask("s1", "desc1", e1.getId());
-
-        assertTrue(manager.getEpic(e1.getId()).getSubTaskIds().contains(s1.getId()));
-
-        List<String> lines = Files.readAllLines(tempPath);
-        assertTrue(lines.stream().anyMatch(line -> line.contains("s1") && line.contains("SUBTASK")
-                && line.contains(String.valueOf(e1.getId()))));
-    }
-
-    @Test
-    void shouldUpdateTaskAndPersistChanges() throws IOException {
-        Task t1 = manager.createTask("t1", "desc1");
-        t1.setTitle("updated");
-        manager.updateTask(t1);
-
-        assertEquals("updated", manager.getTask(t1.getId()).getTitle());
-
-        List<String> lines = Files.readAllLines(tempPath);
-        assertTrue(lines.stream().anyMatch(line -> line.contains("updated")));
-    }
-
-    @Test
-    void shouldUpdateSubtaskAndPersistChanges() throws IOException {
-        Epic e1 = manager.createEpic("e1", "desc1");
-        SubTask s1 = manager.createSubTask("s1", "desc1", e1.getId());
-        s1.setDescription("updated desc");
+        SubTask s1 = manager.createSubTask("S1", "d", e.getId());
+        s1.setStartTime(LocalDateTime.of(2025, 1, 1, 9, 0));
+        s1.setDuration(Duration.ofMinutes(30));
+        s1.setStatus(TaskStatus.DONE);
         manager.updateSubTask(s1);
 
-        assertEquals("updated desc", manager.getSubTask(s1.getId()).getDescription());
+        SubTask s2 = manager.createSubTask("S2", "d", e.getId());
+        s2.setStartTime(LocalDateTime.of(2025, 1, 1, 11, 0));
+        s2.setDuration(Duration.ofMinutes(45));
+        s2.setStatus(TaskStatus.NEW);
+        manager.updateSubTask(s2);
 
-        List<String> lines = Files.readAllLines(tempPath);
-        assertTrue(lines.stream().anyMatch(line -> line.contains("updated desc")));
+        FileBackedTaskManager loaded = FileBackedTaskManager.loadFromFile(tempPath);
+
+        Epic eLoaded = loaded.getEpic(e.getId());
+        assertNotNull(eLoaded, "Эпик должен загрузиться");
+        List<SubTask> subsLoaded = loaded.getSubTasksOfEpic(eLoaded.getId());
+        assertEquals(2, subsLoaded.size(), "Должны загрузиться обе подзадачи эпика");
+        assertTrue(subsLoaded.stream().anyMatch(st -> st.getId() == s1.getId()));
+        assertTrue(subsLoaded.stream().anyMatch(st -> st.getId() == s2.getId()));
+
+        assertEquals(LocalDateTime.of(2025, 1, 1, 9, 0), eLoaded.getStartTime());
+        assertEquals(LocalDateTime.of(2025, 1, 1, 11, 45), eLoaded.getEndTime());
+        assertEquals(Duration.ofMinutes(30 + 45), eLoaded.getDuration());
+
+        assertEquals(TaskStatus.IN_PROGRESS, eLoaded.getStatus());
+
+        List<Task> prioritized = loaded.getPrioritizedTasks();
+        assertEquals(2, prioritized.size());
+        assertEquals(s1.getId(), prioritized.get(0).getId()); // 09:00 первым
+        assertEquals(s2.getId(), prioritized.get(1).getId()); // 11:00 вторым
     }
 
     @Test
-    void shouldRemoveTask() throws IOException {
-        Task t1 = manager.createTask("t1", "desc1");
-        manager.removeTask(t1.getId());
+    void saveAndLoad_subtaskWithNullTime_notInPrioritized_andEpicTimeAggregatesOnlyNonNull() {
+        Epic e = manager.createEpic("E", "d");
 
-        assertNull(manager.getTask(t1.getId()));
+        SubTask sNull = manager.createSubTask("S-null", "d", e.getId());
+        manager.updateSubTask(sNull);
 
-        List<String> lines = Files.readAllLines(tempPath);
-        assertFalse(lines.stream().anyMatch(line -> line.contains("t1")));
-    }
+        SubTask sPlan = manager.createSubTask("S-plan", "d", e.getId());
+        sPlan.setStartTime(LocalDateTime.of(2025, 1, 2, 10, 0));
+        sPlan.setDuration(Duration.ofMinutes(30));
+        manager.updateSubTask(sPlan);
 
+        FileBackedTaskManager loaded = FileBackedTaskManager.loadFromFile(tempPath);
 
-    @Test
-    void shouldRemoveEpicAndItsSubtasks() throws IOException {
-        Epic e1 = manager.createEpic("e1", "desc1");
-        SubTask s1 = manager.createSubTask("s1", "desc1", e1.getId());
+        List<Task> p = loaded.getPrioritizedTasks();
+        assertEquals(1, p.size());
+        assertEquals(sPlan.getId(), p.get(0).getId());
 
-        manager.removeEpic(e1.getId());
-
-        assertNull(manager.getEpic(e1.getId()));
-        assertNull(manager.getSubTask(s1.getId()));
-
-        List<String> lines = Files.readAllLines(tempPath);
-        assertFalse(lines.stream().anyMatch(line -> line.contains("e1")));
-        assertFalse(lines.stream().anyMatch(line -> line.contains("s1")));
+        Epic eLoaded = loaded.getEpic(e.getId());
+        assertEquals(LocalDateTime.of(2025, 1, 2, 10, 0), eLoaded.getStartTime());
+        assertEquals(LocalDateTime.of(2025, 1, 2, 10, 30), eLoaded.getEndTime());
+        assertEquals(Duration.ofMinutes(30), eLoaded.getDuration());
     }
 
     @Test
-    void shouldRemoveSubtaskAndUnlinkFromEpic() throws IOException {
-        Epic e1 = manager.createEpic("e1", "desc1");
-        SubTask s1 = manager.createSubTask("s1", "desc1", e1.getId());
+    void saveAndLoad_epicWithoutSubtasks_hasZeroDurationAndNullTimes() {
+        Epic e = manager.createEpic("E", "d");
 
-        manager.removeSubTask(s1.getId());
+        FileBackedTaskManager loaded = FileBackedTaskManager.loadFromFile(tempPath);
 
-        assertFalse(manager.getEpic(e1.getId()).getSubTaskIds().contains(s1.getId()));
-
-        List<String> lines = Files.readAllLines(tempPath);
-        assertFalse(lines.stream().anyMatch(line -> line.contains("s1")));
+        Epic eLoaded = loaded.getEpic(e.getId());
+        assertNotNull(eLoaded);
+        assertEquals(Duration.ZERO, eLoaded.getDuration());
+        assertNull(eLoaded.getStartTime());
+        assertNull(eLoaded.getEndTime());
+        assertTrue(loaded.getPrioritizedTasks().isEmpty());
     }
 
     @Test
-    void shouldClearAllTasksAndEpics() throws IOException {
-        Task t1 = manager.createTask("t1", "desc1");
-        Epic e1 = manager.createEpic("e1", "desc1");
-        SubTask s1 = manager.createSubTask("s1", "desc1", e1.getId());
+    void saveAndLoad_preservesSubtaskStatus() {
+        Epic e = manager.createEpic("E", "d");
 
-        manager.clearAll();
+        SubTask s = manager.createSubTask("S", "d", e.getId());
+        s.setStatus(TaskStatus.IN_PROGRESS);
+        s.setStartTime(LocalDateTime.of(2025, 1, 3, 12, 0));
+        s.setDuration(Duration.ofMinutes(25));
+        manager.updateSubTask(s);
 
-        assertTrue(manager.getAllTasks().isEmpty());
-        assertTrue(manager.getAllEpics().isEmpty());
-        assertTrue(manager.getAllSubTasks().isEmpty());
+        FileBackedTaskManager loaded = FileBackedTaskManager.loadFromFile(tempPath);
 
-        List<String> lines = Files.readAllLines(tempPath);
-        assertEquals(1, lines.size());
-        assertEquals("id,type,title,status,description,epic", lines.getFirst());
+        SubTask sLoaded = loaded.getSubTask(s.getId());
+        assertNotNull(sLoaded);
+        assertEquals(TaskStatus.IN_PROGRESS, sLoaded.getStatus(), "Статус сабтаска должен сохраниться");
+        assertEquals(TaskStatus.IN_PROGRESS, loaded.getEpic(e.getId()).getStatus());
     }
 
     @Test
-    void shouldManuallyAddTaskAndPersistToFile() throws IOException {
-        Task t1 = new Task(100, "t1", "desc1");
-        manager.addTask(t1);
+    void loadFromFile_throwsManagerSaveException_ifFileMissingOrUnreadable(@TempDir Path dir) {
+        Path badFile = dir.resolve("nonexistent.csv");
+        assertFalse(Files.exists(badFile));
 
-        Task t = manager.getTask(100);
-        assertEquals(t1, t);
-
-        List<String> lines = Files.readAllLines(tempPath);
-        assertTrue(lines.stream().anyMatch(line -> line.contains("t1") && line.contains("TASK")));
+        assertThrows(ManagerSaveException.class,
+                () -> FileBackedTaskManager.loadFromFile(badFile),
+                "Файла не существует");
     }
-
-    @Test
-    void shouldManuallyAddEpicAndPersistToFile() throws IOException {
-        Epic e1 = new Epic(200, "e1", "desc1");
-        manager.addEpic(e1);
-
-        Epic e = manager.getEpic(200);
-        assertEquals(e1, e);
-        assertEquals(TaskStatus.NEW, e.getStatus());
-
-        List<String> lines = Files.readAllLines(tempPath);
-        assertTrue(lines.stream().anyMatch(line -> line.contains("e1") && line.contains("EPIC")));
-    }
-
-    @Test
-    void shouldManuallyAddSubtask_LinkedToEpicAndPersistToFile() throws IOException {
-        Epic e1 = new Epic(300, "e1", "desc1");
-        manager.addEpic(e1);
-
-        SubTask s1 = new SubTask(301, "s1", "desc1", 300);
-        manager.addSubTask(s1);
-
-        SubTask s = manager.getSubTask(301);
-        assertEquals(s1, s);
-
-        List<SubTask> list = manager.getSubTasksOfEpic(300);
-        assertTrue(list.contains(s1));
-
-        List<String> lines = Files.readAllLines(tempPath);
-        assertTrue(lines.stream().anyMatch(line -> line.contains("s1") && line.contains("SUBTASK")
-                && line.contains("300")));
-    }
-
-    @Test
-    void shouldThrowWhenSavingToInvalidPath() throws IOException {
-        Path tempDir = Files.createTempDirectory("readonly");
-        Path brokenFile = tempDir.resolve("broken.csv");
-
-        Files.delete(tempDir);
-
-        FileBackedTaskManager brokenManager = new FileBackedTaskManager(brokenFile);
-        Task task = new Task(1, "t1", "desc1");
-
-        ManagerSaveException ex = assertThrows(ManagerSaveException.class, () ->
-                brokenManager.addTask(task));
-        assertTrue(ex.getMessage().contains("Ошибка при сохранении"));
-    }
-
-    @Test
-    void shouldThrowWhenLoadingFromNonExistentFile() {
-        Path fakePath = Path.of("lorem/lorem/lorem/file.csv");
-
-        ManagerSaveException ex = assertThrows(ManagerSaveException.class, () ->
-                FileBackedTaskManager.loadFromFile(fakePath));
-        assertTrue(ex.getMessage().contains("Ошибка при загрузке файла"));
-    }
-
-    @Test
-    void shouldThrowWhenFileContainsInvalidTaskLine() throws IOException {
-        Path brokenFile = Files.createTempFile("broken", ".csv");
-        Files.writeString(brokenFile, """
-                id,type,title,status,description,epic
-                lorem ipsum maxima
-                """);
-
-        ManagerSaveException ex = assertThrows(ManagerSaveException.class, () ->
-                FileBackedTaskManager.loadFromFile(brokenFile));
-        assertTrue(ex.getMessage().contains("Ошибка при разборе строки"));
-    }
-
 }
+
