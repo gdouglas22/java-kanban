@@ -18,10 +18,14 @@ public class Epic extends Task {
     }
 
     @Override
-    public void setStartTime(LocalDateTime startTime) {}
+    public void setStartTime(LocalDateTime startTime) {
+
+    }
 
     @Override
-    public void setDuration(Duration duration) {}
+    public void setDuration(Duration duration) {
+
+    }
 
     @Override
     public LocalDateTime getEndTime() {
