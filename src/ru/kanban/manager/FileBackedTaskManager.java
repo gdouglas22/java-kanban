@@ -113,6 +113,9 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     updateEpicStatus(epic);
                 }
             }
+            default -> throw new IllegalArgumentException(
+                    "Неизвестный тип задачи: " + task.getType()
+            );
         }
     }
 
