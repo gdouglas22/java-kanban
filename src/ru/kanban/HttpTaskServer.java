@@ -45,6 +45,7 @@ public class HttpTaskServer {
     public void start() {
         server.start();
     }
+
     public void stop() {
         server.stop(0);
     }
