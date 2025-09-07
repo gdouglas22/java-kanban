@@ -1,4 +1,4 @@
-package ru.kanban;
+package ru.kanban.api;
 
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
@@ -7,34 +7,36 @@ import ru.kanban.task.Task;
 
 import java.io.IOException;
 
-class TasksHandler extends BaseHttpHandler {
+public class TasksHandler extends BaseHttpHandler {
     public TasksHandler(TaskManager manager, Gson gson) { super(manager, gson); }
 
     @Override
     public void handle(HttpExchange h) throws IOException {
         try {
             String method = h.getRequestMethod();
-            Integer id = pathId(h);
-
             switch (method) {
                 case "GET" -> {
+                    Integer id = extractId(h);
                     if (id == null) {
                         sendJson(h, 200, manager.getAllTasks());
                     } else {
                         Task t = manager.getTask(id);
+                        if (t == null) { sendNotFound(h); return; }
                         sendJson(h, 200, t);
                     }
                 }
                 case "POST" -> {
                     String body = readBody(h);
                     Task t = gson.fromJson(body, Task.class);
+                    if (t == null) { sendServerError(h); return; }
+
                     if (t.getId() == 0) {
-                        try {
-                            manager.addTask(t);
-                            sendJson(h, 201, t);
-                        } catch (IllegalArgumentException e) {
-                            sendHasOverlaps(h);
-                        }
+                        Task created = manager.createTask(t.getTitle(), t.getDescription());
+                        if (t.getStartTime() != null) created.setStartTime(t.getStartTime());
+                        if (t.getDuration()  != null) created.setDuration(t.getDuration());
+                        if (t.getStatus()    != null) created.setStatus(t.getStatus());
+                        manager.updateTask(created);
+                        sendJson(h, 201, created);
                     } else {
                         try {
                             manager.updateTask(t);
@@ -45,14 +47,16 @@ class TasksHandler extends BaseHttpHandler {
                     }
                 }
                 case "DELETE" -> {
-                    if (id == null) { sendNotFound(h); return; }
+                    Integer id = extractId(h);
+                    if (id == null) { sendServerError(h); return; }
+                    if (manager.getTask(id) == null) { sendNotFound(h); return; }
                     manager.removeTask(id);
-                    sendText(h, 200, "{\"status\":\"deleted\"}");
+                    sendText(h, 200, "ОК");
                 }
-                default -> sendText(h, 405, "{\"error\":\"Method Not Allowed\"}");
+                default -> sendServerError(h);
             }
         } catch (IllegalArgumentException e) {
-            sendNotFound(h);
+            sendHasOverlaps(h);
         } catch (Exception e) {
             sendServerError(h);
         }
