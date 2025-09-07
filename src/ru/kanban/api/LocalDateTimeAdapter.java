@@ -9,9 +9,9 @@ public class LocalDateTimeAdapter implements JsonSerializer<LocalDateTime>, Json
     @Override public JsonElement serialize(LocalDateTime src, Type t, JsonSerializationContext c) {
         return new JsonPrimitive(src.toString());
     }
+
     @Override public LocalDateTime deserialize(JsonElement json, Type t, JsonDeserializationContext c)
             throws JsonParseException {
         return LocalDateTime.parse(json.getAsString());
     }
 }
-
