@@ -13,7 +13,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
-    public EpicsHandler(TaskManager manager, Gson gson) { super(manager, gson); }
+    public EpicsHandler(TaskManager manager, Gson gson) {
+        super(manager, gson);
+    }
 
     @Override
     public void handle(HttpExchange h) throws IOException {
@@ -30,7 +32,10 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
                     if (subPath) {
                         Integer epicId = extractId(h);
                         Epic epic = manager.getEpic(epicId == null ? -1 : epicId);
-                        if (epic == null) { sendNotFound(h); return; }
+                        if (epic == null) {
+                            sendNotFound(h);
+                            return;
+                        }
                         if (epicId != null) {
                             List<SubTask> list = manager.getSubTasksOfEpic(epicId);
                             sendJson(h, 200, list);
@@ -42,14 +47,20 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
                         sendJson(h, 200, manager.getAllEpics());
                     } else {
                         Epic e = manager.getEpic(id);
-                        if (e == null) { sendNotFound(h); return; }
+                        if (e == null) {
+                            sendNotFound(h);
+                            return;
+                        }
                         sendJson(h, 200, e);
                     }
                 }
                 case "POST" -> {
                     String body = readBody(h);
                     Epic e = gson.fromJson(body, Epic.class);
-                    if (e == null) { sendServerError(h); return; }
+                    if (e == null) {
+                        sendServerError(h);
+                        return;
+                    }
 
                     if (e.getId() == 0) {
                         Epic created = manager.createEpic(e.getTitle(), e.getDescription());
@@ -61,8 +72,14 @@ public class EpicsHandler extends BaseHttpHandler implements HttpHandler {
                 }
                 case "DELETE" -> {
                     Integer id = extractId(h);
-                    if (id == null) { sendServerError(h); return; }
-                    if (manager.getEpic(id) == null) { sendNotFound(h); return; }
+                    if (id == null) {
+                        sendServerError(h);
+                        return;
+                    }
+                    if (manager.getEpic(id) == null) {
+                        sendNotFound(h);
+                        return;
+                    }
                     manager.removeEpic(id);
                     sendText(h, 200, "ОК");
                 }

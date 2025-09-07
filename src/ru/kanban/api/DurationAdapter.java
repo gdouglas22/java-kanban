@@ -7,11 +7,13 @@ import java.time.Duration;
 
 
 public class DurationAdapter implements JsonSerializer<Duration>, JsonDeserializer<Duration> {
-    @Override public JsonElement serialize(Duration src, Type t, JsonSerializationContext c) {
+    @Override
+    public JsonElement serialize(Duration src, Type t, JsonSerializationContext c) {
         return new JsonPrimitive(src.toString());
     }
 
-    @Override public Duration deserialize(JsonElement json, Type t, JsonDeserializationContext c)
+    @Override
+    public Duration deserialize(JsonElement json, Type t, JsonDeserializationContext c)
             throws JsonParseException {
         return Duration.parse(json.getAsString());
     }
