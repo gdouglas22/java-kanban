@@ -8,7 +8,9 @@ import ru.kanban.manager.TaskManager;
 import java.io.IOException;
 
 public class PrioritizedHandler extends BaseHttpHandler implements HttpHandler {
-    public PrioritizedHandler(TaskManager manager, Gson gson) { super(manager, gson); }
+    public PrioritizedHandler(TaskManager manager, Gson gson) {
+        super(manager, gson);
+    }
 
     @Override
     public void handle(HttpExchange h) throws IOException {
