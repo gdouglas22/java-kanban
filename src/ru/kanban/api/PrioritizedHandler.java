@@ -15,7 +15,9 @@ public class PrioritizedHandler extends BaseHttpHandler implements HttpHandler {
     @Override
     public void handle(HttpExchange h) throws IOException {
         try {
-            if (!"GET".equals(h.getRequestMethod())) { sendServerError(h); return; }
+            if (!"GET".equals(h.getRequestMethod())) {
+                sendServerError(h); return;
+            }
             sendJson(h, 200, manager.getPrioritizedTasks());
         } catch (Exception e) {
             sendServerError(h);
