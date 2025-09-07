@@ -42,10 +42,16 @@ public class HttpTaskServer {
         server.createContext("/prioritized", new PrioritizedHandler(manager, GSON));
     }
 
-    public void start() { server.start(); }
-    public void stop()  { server.stop(0); }
+    public void start() {
+        server.start();
+    }
+    public void stop()  {
+        server.stop(0);
+    }
 
-    public static Gson getGson() { return GSON; }
+    public static Gson getGson() {
+        return GSON;
+    }
 
     private static Gson buildGson() {
         return new GsonBuilder()
