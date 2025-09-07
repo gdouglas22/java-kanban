@@ -57,7 +57,8 @@ abstract class BaseHttpHandler implements HttpHandler {
         if (parts.length >= 2) {
             try {
                 return Integer.parseInt(parts[1]);
-            } catch (NumberFormatException ignore) {}
+            } catch (NumberFormatException ignore) {
+            }
         }
         return null;
     }
