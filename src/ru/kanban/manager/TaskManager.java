@@ -13,7 +13,7 @@ public interface TaskManager {
 
     SubTask createSubTask(String title, String description, int epicId);
 
-    void addTask(Task task);
+    void addTask(Task task) throws ManagerSaveException;
 
     void addEpic(Epic epic);
 

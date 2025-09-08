@@ -10,15 +10,19 @@ import java.util.List;
 import java.util.Map;
 
 public class InMemoryTaskManager implements TaskManager {
-    private int idCounter = 0;
+    protected int idCounter = 0;
 
-    private final Map<Integer, Task> tasks = new HashMap<>();
-    private final Map<Integer, Epic> epics = new HashMap<>();
-    private final Map<Integer, SubTask> subtasks = new HashMap<>();
-    private final HistoryManager historyManager;
+    protected final Map<Integer, Task> tasks = new HashMap<>();
+    protected final Map<Integer, Epic> epics = new HashMap<>();
+    protected final Map<Integer, SubTask> subtasks = new HashMap<>();
+    protected final HistoryManager historyManager;
 
     public InMemoryTaskManager(HistoryManager historyManager) {
         this.historyManager = historyManager;
+    }
+
+    public InMemoryTaskManager() {
+        this.historyManager = Managers.getDefaultHistory();
     }
 
     @Override
@@ -52,7 +56,7 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void addTask(Task task) {
+    public void addTask(Task task) throws ManagerSaveException {
         if (task != null) {
             tasks.put(task.getId(), task);
         }
@@ -223,5 +227,6 @@ public class InMemoryTaskManager implements TaskManager {
     public List<Task> getHistory() {
         return historyManager.getHistory();
     }
+
 }
 
