@@ -46,4 +46,6 @@ public interface TaskManager {
     void clearAll();
 
     List<Task> getHistory();
+
+    List<Task> getPrioritizedTasks();
 }
